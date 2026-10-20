@@ -1,0 +1,37 @@
+name: Trading mentor checks
+on:
+  push:
+    branches: [trading-mentor-agent]
+    paths: ['projects/market-confluence-mentor/**', '.github/workflows/trading-mentor.yml']
+  pull_request:
+    paths: ['projects/market-confluence-mentor/**', '.github/workflows/trading-mentor.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test offline with isolated data and no account credentials
+        working-directory: projects/market-confluence-mentor
+        run: npm test
+      - name: Validate Compose configuration using throwaway test secrets
+        working-directory: projects/market-confluence-mentor
+        run: |
+          node setup.cjs
+          docker compose config --quiet
+      - name: Package source without credentials or data
+        run: |
+          mkdir -p artifact
+          cd projects
+          zip -r ../artifact/market-confluence-mentor.zip market-confluence-mentor -x '*/.env' '*/.private/*' '*/data/*' '*/node_modules/*'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: market-confluence-mentor
+          path: artifact/market-confluence-mentor.zip
+          retention-days: 14

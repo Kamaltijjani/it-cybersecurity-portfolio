@@ -1,0 +1,9 @@
+{
+  "symbol": "BTCUSDT",
+  "venue": "BINANCE",
+  "product": "spot",
+  "strategy": "SMC",
+  "style": "day",
+  "send": false,
+  "monitor": false
+}

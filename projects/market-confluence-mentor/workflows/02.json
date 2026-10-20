@@ -1,0 +1,120 @@
+{
+  "id": "mentor-telegram-v1",
+  "name": "02 Private Telegram requests",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "mentor-telegram-v1-manual",
+      "name": "Manual check",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{}}];"
+      },
+      "id": "mentor-telegram-v1-seed",
+      "name": "Test request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://mentor:8080/telegram",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "mentor-telegram-v1-http",
+      "name": "Private operation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mentor-local-key-v1",
+          "name": "Mentor local key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "mentor-telegram-v1-timer",
+      "name": "One-minute checks",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Manual check": {
+      "main": [
+        [
+          {
+            "node": "Test request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test request": {
+      "main": [
+        [
+          {
+            "node": "Private operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One-minute checks": {
+      "main": [
+        [
+          {
+            "node": "Test request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "pinData": {},
+  "tags": []
+}
