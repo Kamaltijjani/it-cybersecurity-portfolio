@@ -1,0 +1,15 @@
+{
+  "name": "market-confluence-mentor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local research-only trading mentor; manual trade execution",
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test tests/*.test.cjs",
+    "setup": "node setup.cjs",
+    "check": "node client.cjs status"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

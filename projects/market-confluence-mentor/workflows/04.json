@@ -1,0 +1,172 @@
+{
+  "id": "mentor-journal-v1",
+  "name": "04 Journal and measured results",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "mentor-journal-v1-manual",
+      "name": "Manual check",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{\"operation\":\"performance\",\"payload\":{}}}];"
+      },
+      "id": "mentor-journal-v1-seed",
+      "name": "Test request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://mentor:8080/' + $json.operation }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "id": "mentor-journal-v1-http",
+      "name": "Private operation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mentor-local-key-v1",
+          "name": "Mentor local key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mentor-journal",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "mentor-journal-v1-webhook",
+      "webhookId": "mentor-journal-v1-webhook",
+      "name": "Authenticated request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        230
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "mentor-local-key-v1",
+          "name": "Mentor local key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:$json.body}];"
+      },
+      "id": "mentor-journal-v1-body",
+      "name": "Request body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        230
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allowed=['entry','outcome','performance','journal','status','report']; if(!allowed.includes($json.operation)) throw new Error('Unsupported journal operation'); if(!$json.payload || typeof $json.payload !== 'object' || Array.isArray($json.payload)) throw new Error('Object payload required'); return [{json:$json}];"
+      },
+      "id": "journal-allow",
+      "name": "Allowed journal action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        450,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Manual check": {
+      "main": [
+        [
+          {
+            "node": "Test request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test request": {
+      "main": [
+        [
+          {
+            "node": "Allowed journal action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authenticated request": {
+      "main": [
+        [
+          {
+            "node": "Request body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request body": {
+      "main": [
+        [
+          {
+            "node": "Allowed journal action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Allowed journal action": {
+      "main": [
+        [
+          {
+            "node": "Private operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos"
+  },
+  "pinData": {},
+  "tags": []
+}
